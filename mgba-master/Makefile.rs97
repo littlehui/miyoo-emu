@@ -1,0 +1,45 @@
+PRGNAME     = mgba.dge
+
+# define regarding OS, which compiler to use
+CHAINPREFIX=/opt/rs97-toolchain
+CC          = /opt/rs97-toolchain/bin/mipsel-linux-gcc
+LD          = /opt/rs97-toolchain/bin/mipsel-linux-gcc
+
+SYSROOT     := $(CHAINPREFIX)/usr/mipsel-buildroot-linux-uclibc/sysroot
+SDL_CFLAGS  := $(shell $(SYSROOT)/usr/bin/sdl-config --cflags)
+SDL_LIBS    := $(shell $(SYSROOT)/usr/bin/sdl-config --libs)
+
+# change compilation / linking flag options
+CFLAGS		=  -DHAVE_LOCALE -DUSE_PTHREADS -DNDEBUG -DMINIMAL_CORE -DM_CORE_GBA -DM_CORE_GB -DUSE_PNG -DCOLOR_16_BIT -DCOLOR_5_6_5 
+CFLAGS		+= -Isrc -Iinclude -Iinclude/mgba-util 
+
+CFLAGS		+= -Ofast -mips32 -fomit-frame-pointer -fdata-sections -ffunction-sections -mno-abicalls -mplt -fno-pic -fno-pie -mhard-float
+CFLAGS		+= -mno-relax-pic-calls -mlocal-sdata -mframe-header-opt -mno-check-zero-division -mfp32 -mgp32 -mno-embedded-data -fno-pic -mno-interlink-compressed -mno-mt -mno-micromips -mno-interlink-mips16
+CFLAGS		+= -fprofile-use 
+
+CFLAGS		+= $(CC_OPTS) $(SDL_CFLAGS) -DRS97
+LDFLAGS     = $(SDL_LIBS) -lm -Wl,--as-needed -Wl,--gc-sections -flto -lz -lpng -pthread -s
+
+#./src/debugger
+# Files to be compiled
+SRCDIR    = ./src ./src/arm ./src/core ./src/util/vfs ./src/platform/sdl ./src/platform/posix
+SRCDIR	 += ./src/feature ./src/feature/gui 
+SRCDIR   += ./src/gb ./src/gb/debugger ./src/gb/extra ./src/gb/renderers
+SRCDIR	+= ./src/gb/sio ./src/gba ./src/gba/debugger ./src/gba/cheats ./src/gba/extra ./src/gba/renderers
+SRCDIR	+= ./src/gba/rr ./src/gba/sio ./src/lr35902 ./src/lr35902/debugger 
+SRCDIR	+= ./src/third-party/blip_buf ./src/third-party/inih ./src/util ./src/util/gui ./version
+
+VPATH     = $(SRCDIR)
+SRC_C   = $(foreach dir, $(SRCDIR), $(wildcard $(dir)/*.c))
+OBJ_C   = $(patsubst %.c, %.o, $(SRC_C))
+OBJS     = $(OBJ_C) $(OBJ_CP)
+
+# Rules to make executable
+$(PRGNAME): $(OBJS)  
+	$(LD) $(CFLAGS) -o $(PRGNAME) $^ $(LDFLAGS)
+
+$(OBJ_C) : %.o : %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+clean:
+	rm -f $(PRGNAME) $(OBJ_C)

@@ -1,0 +1,15 @@
+/build
+/build-*
+*.user*
+*~
+*.swp
+*.pyc
+*.gba
+*.gb
+*.out
+*.o
+*.sav
+*.diff
+*.dge
+/cm
+cm/

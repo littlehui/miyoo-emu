@@ -1,0 +1,18 @@
+--- src/gba/gba.c
++++ src/gba/gba.c
+@@ -496,12 +493,13 @@ void GBATestIRQ(struct ARMCore* cpu) {
+ 	struct GBA* gba = (struct GBA*) cpu->master;
+ 	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
+ 		gba->springIRQ = gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1];
+-		gba->cpu->nextEvent = gba->cpu->cycles;
++		gba->cpu->nextEvent -= gba->cpu->cycles;
++		gba->cpu->cycles = 0;
+ 	}
+ }
+ 
+ void GBAHalt(struct GBA* gba) {
+-	gba->cpu->nextEvent = gba->cpu->cycles;
++	gba->cpu->cycles = 0;
+ 	gba->cpu->halted = 1;
+ }
+ 

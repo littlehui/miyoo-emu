@@ -1,0 +1,11 @@
+--- src/arm/arm.c
++++ src/arm/arm.c
+@@ -206,7 +206,7 @@ void ARMRaiseUndefined(struct ARMCore* cpu) {
+ 	_ARMSetMode(cpu, MODE_ARM);
+ 	cpu->spsr = cpsr;
+ 	cpu->cpsr.i = 1;
+-	cpu->cycles += currentCycles;
++	cpu->cycles -= currentCycles;
+ }
+ 
+ static inline void ARMStep(struct ARMCore* cpu) {
