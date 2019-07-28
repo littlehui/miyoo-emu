@@ -1,0 +1,14 @@
+arm-linux-gcc /tmp/picodrive-conf--29301-.c -o /tmp/picodrive-conf--29301-
+arm-linux-gcc -marm /tmp/picodrive-conf--29301-.c -o /tmp/picodrive-conf--29301- -lz
+arm-linux-gcc -marm -c /tmp/picodrive-conf--29301-.c -o /tmp/picodrive-conf--29301-.o
+arm-linux-gcc -marm -c /tmp/picodrive-conf--29301-.c -o /tmp/picodrive-conf--29301-.o
+/tmp/picodrive-conf--29301-.c:1:12: fatal error: libavcodec/avcodec.h: No such file or directory
+   #include <libavcodec/avcodec.h>
+            ^~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+arm-linux-gcc -marm -I/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT /tmp/picodrive-conf--29301-.c -o /tmp/picodrive-conf--29301- -L/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/lib -lSDL -lpthread
+arm-linux-gcc -marm -I/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -c /tmp/picodrive-conf--29301-.c -o /tmp/picodrive-conf--29301-.o -Wno-unused-result
+/tmp/picodrive-conf--29301-.c: In function ‘test’:
+/tmp/picodrive-conf--29301-.c:1:31: warning: implicit declaration of function ‘fread’ [-Wimplicit-function-declaration]
+ void test(void *f, void *d) { fread(d, 1, 1, f); }
+                               ^~~~~

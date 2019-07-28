@@ -1,0 +1,17 @@
+arm-linux-gcc /tmp/pcsx-conf-15434-18087-13985.c -o /tmp/pcsx-conf-453-18087-16851 -ldl -lm -lpthread
+arm-linux-gcc -mcpu=arm926ej-s -mtune=arm926ej-s -marm -DRAM_FIXED /tmp/pcsx-conf-15434-18087-13985.c -o /tmp/pcsx-conf-453-18087-16851 -ldl -lm -lpthread -lz
+arm-linux-gcc -mcpu=arm926ej-s -mtune=arm926ej-s -marm -DRAM_FIXED /tmp/pcsx-conf-15434-18087-13985.c -o /tmp/pcsx-conf-453-18087-16851 -lpng -ldl -lm -lpthread -lz
+arm-linux-gcc -mcpu=arm926ej-s -mtune=arm926ej-s -marm -DRAM_FIXED /tmp/pcsx-conf-15434-18087-13985.c -o /tmp/pcsx-conf-453-18087-16851 -lpng -ldl -lm -lpthread -lz -lEGL -lGLES_CM
+/home/opt/miyoo/bin/../lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/../../../../arm-miyoo-linux-uclibcgnueabi/bin/ld: cannot find -lGLES_CM
+collect2: error: ld returned 1 exit status
+arm-linux-gcc -mcpu=arm926ej-s -mtune=arm926ej-s -marm -DRAM_FIXED /tmp/pcsx-conf-15434-18087-13985.c -o /tmp/pcsx-conf-453-18087-16851 -lpng -ldl -lm -lpthread -lz -lEGL -lGLESv1_CM
+arm-linux-gcc -mcpu=arm926ej-s -mtune=arm926ej-s -marm -DRAM_FIXED -c /tmp/pcsx-conf-15434-18087-13985.c -o /tmp/pcsx-conf-14664-18087-17878.o
+/tmp/pcsx-conf-15434-18087-13985.c:1:12: fatal error: inc_libc64_mini.h: No such file or directory
+   #include <inc_libc64_mini.h>
+            ^~~~~~~~~~~~~~~~~~~
+compilation terminated.
+arm-linux-gcc -mcpu=arm926ej-s -mtune=arm926ej-s -marm -DRAM_FIXED -D_FILE_OFFSET_BITS=64 -c /tmp/pcsx-conf-15434-18087-13985.c -o /tmp/pcsx-conf-14664-18087-17878.o -Wno-unused-result
+/tmp/pcsx-conf-15434-18087-13985.c: In function ‘test’:
+/tmp/pcsx-conf-15434-18087-13985.c:1:31: warning: implicit declaration of function ‘fread’ [-Wimplicit-function-declaration]
+ void test(void *f, void *d) { fread(d, 1, 1, f); }
+                               ^~~~~

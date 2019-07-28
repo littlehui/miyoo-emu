@@ -1,0 +1,52 @@
+# Define compilation type
+#OSTYPE=a320od
+#OSTYPE=gcw0od
+OSTYPE=miyoo
+
+PRGNAME     = vba-miyoo
+
+# define regarding OS, which compiler to use
+EXESUFFIX = .dge
+CC = arm-linux-gcc
+CCP = arm-linux-g++
+LD = arm-linux-g++
+
+TOOLCHAIN = /opt/miyoo
+
+
+# add SDL dependencies
+SYSROOT     := $(shell $(CC) --print-sysroot)
+
+SDL_LIB     = $(shell $(SYSROOT)/usr/bin/sdl-config --libs)
+SDL_CFLAGS  := $(shell $(SYSROOT)/usr/bin/sdl-config --cflags)
+
+# change compilation / linking flag options
+F_OPTS = -fomit-frame-pointer -ffunction-sections -ffast-math -fsingle-precision-constant -fsigned-char
+#CC_OPTS = -O3 -DC_CORE -DFINAL_VERSION -DSDL -D_OPENDINGUX_  -D_VIDOD32_ -fpermissive $(F_OPTS)
+CC_OPTS = -Ofast -fdata-sections -ffunction-sections -fno-PIC -DARM_ARCH -DPC_BUILD -Wall -march=armv5te -mtune=arm926ej-s -O3 -DC_CORE -DFINAL_VERSION -DSDL -D_OPENDINGUX_  -D_VIDOD16_ -fpermissive $(F_OPTS)
+CFLAGS      = $(SDL_CFLAGS) -I$(SYSROOT)/usr/include -I${TOOLCHAIN}/include -DOPENDINGUX $(CC_OPTS)
+CXXFLAGS=$(CFLAGS)
+LDFLAGS     = $(SDL_LIB) $(CC_OPTS) -lSDL -lz
+
+
+# Files to be compiled
+SRCDIR    = ./vba/apu ./vba/common ./vba/gb ./vba/gba ./vba ./opendingux .
+VPATH     = $(SRCDIR)
+SRC_C   = $(foreach dir, $(SRCDIR), $(wildcard $(dir)/*.c))
+SRC_CP   = $(foreach dir, $(SRCDIR), $(wildcard $(dir)/*.cpp))
+OBJ_C   = $(notdir $(patsubst %.c, %.o, $(SRC_C)))
+OBJ_CP   = $(notdir $(patsubst %.cpp, %.o, $(SRC_CP)))
+OBJS     = $(OBJ_C) $(OBJ_CP)
+
+# Rules to make executable
+$(PRGNAME)$(EXESUFFIX): $(OBJS)  
+	$(LD) $(CFLAGS) -o $(PRGNAME)$(EXESUFFIX) $^ $(LDFLAGS)
+
+$(OBJ_C) : %.o : %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJ_CP) : %.o : %.cpp
+	$(CCP) $(CXXFLAGS) -c -o $@ $<
+
+clean:
+	rm -f $(PRGNAME)$(EXESUFFIX) *.o

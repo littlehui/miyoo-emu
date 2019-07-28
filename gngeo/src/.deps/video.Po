@@ -1,0 +1,290 @@
+video.o: video.c ../config.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/string.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/features.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_config.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/sys/cdefs.h \
+ /home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include/stddef.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/stdlib.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/waitflags.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/waitstatus.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/endian.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/endian.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/byteswap.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap-common.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/types.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/wordsize.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/typesizes.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap-16.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/sys/types.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/time.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/sys/select.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/select.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/sigset.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/time.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/sys/sysmacros.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/pthreadtypes.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/alloca.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/zlib.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/zconf.h \
+ /home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include-fixed/limits.h \
+ /home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include-fixed/syslimits.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/limits.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/posix1_lim.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/local_lim.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/linux/limits.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_local_lim.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/posix2_lim.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/xopen_lim.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/stdio_lim.h \
+ /home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include/stdarg.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/unistd.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/posix_opt.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_posix_opt.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/environments.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/confname.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/getopt.h \
+ video.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_main.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_stdinc.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_config.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_platform.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/stdio.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_stdio.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/wchar.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/wchar.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/strings.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/inttypes.h \
+ /home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include/stdint.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/stdint.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/ctype.h \
+ /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_touplow.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/begin_code.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/close_code.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_audio.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_error.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_endian.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_mutex.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_thread.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_rwops.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_cdrom.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_cpuinfo.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_events.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_active.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_keyboard.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_keysym.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_mouse.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_video.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_joystick.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_quit.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_loadso.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_timer.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_version.h \
+ memory.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_endian.h \
+ ym2610/2610intf.h ym2610/ym2610.h ym2610/mvs.h ym2610/../timer.h state.h \
+ roms.h emu.h \
+ /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_types.h \
+ messages.h screen.h list.h frame_skip.h transpack.h gnutil.h \
+ video_template.h
+
+../config.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/string.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/features.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_config.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/sys/cdefs.h:
+
+/home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include/stddef.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/stdlib.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/waitflags.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/waitstatus.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/endian.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/endian.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/byteswap.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap-common.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/types.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/wordsize.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/typesizes.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap-16.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/sys/types.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/time.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/sys/select.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/select.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/sigset.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/time.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/sys/sysmacros.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/pthreadtypes.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/alloca.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/zlib.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/zconf.h:
+
+/home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include-fixed/limits.h:
+
+/home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include-fixed/syslimits.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/limits.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/posix1_lim.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/local_lim.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/linux/limits.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_local_lim.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/posix2_lim.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/xopen_lim.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/stdio_lim.h:
+
+/home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include/stdarg.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/unistd.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/posix_opt.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_posix_opt.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/environments.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/confname.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/getopt.h:
+
+video.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_main.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_stdinc.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_config.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_platform.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/stdio.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_stdio.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/wchar.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/wchar.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/strings.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/inttypes.h:
+
+/home/opt/miyoo/lib/gcc/arm-miyoo-linux-uclibcgnueabi/7.3.0/include/stdint.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/stdint.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/ctype.h:
+
+/home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_touplow.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/begin_code.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/close_code.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_audio.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_error.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_endian.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_mutex.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_thread.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_rwops.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_cdrom.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_cpuinfo.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_events.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_active.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_keyboard.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_keysym.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_mouse.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_video.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_joystick.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_quit.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_loadso.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_timer.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_version.h:
+
+memory.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_endian.h:
+
+ym2610/2610intf.h:
+
+ym2610/ym2610.h:
+
+ym2610/mvs.h:
+
+ym2610/../timer.h:
+
+state.h:
+
+roms.h:
+
+emu.h:
+
+/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot/usr/include/SDL/SDL_types.h:
+
+messages.h:
+
+screen.h:
+
+list.h:
+
+frame_skip.h:
+
+transpack.h:
+
+gnutil.h:
+
+video_template.h:
