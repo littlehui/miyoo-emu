@@ -605,11 +605,11 @@ u32 key_map(SDLKey key_sym)
 {
   switch(key_sym)
   {
-    case SDLK_LSHIFT:
+    case SDLK_LALT:
     case SDLK_BACKSPACE:
       return BUTTON_R;
 
-    case SDLK_SPACE:
+    case SDLK_LSHIFT:
     case SDLK_TAB:
       return BUTTON_L;
 
@@ -634,7 +634,7 @@ u32 key_map(SDLKey key_sym)
     case SDLK_LCTRL:
       return BUTTON_A;
 
-    case SDLK_LALT:
+    case SDLK_SPACE:
       return BUTTON_B;
 
     default:

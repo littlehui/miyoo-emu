@@ -387,7 +387,7 @@ unsigned char __fastcall FstarfrcReadByte(unsigned int a)
 		case 0x150030:
 		case 0x150031: {
 			return FstarfrcDip[1];
-		}
+		}
 		case 0x150040:
 		case 0x150041: {
 			return FstarfrcDip[0];
@@ -474,7 +474,7 @@ unsigned char __fastcall GinkunReadByte(unsigned int a)
 		case 0x150030:
 		case 0x150031: {
 			return FstarfrcDip[1];
-		}
+		}
 		case 0x150040:
 		case 0x150041: {
 			return FstarfrcDip[0];
