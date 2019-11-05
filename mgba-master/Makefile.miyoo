@@ -16,7 +16,7 @@ CFLAGS		+= -Isrc -Iinclude -Iinclude/mgba-util -I/opt/miyoo/arm-miyoo-linux-ucli
 
 #CFLAGS		+= -Ofast -march=armv5te -fomit-frame-pointer -fdata-sections -ffunction-sections -fplt -fno-pic -fno-pie -mhard-float -Wno-error=coverage-mismatch
 #CFLAGS		+= -Ofast -march=armv4t -fomit-frame-pointer -fdata-sections -ffunction-sections -fplt -fno-pic -fno-pie -Wno-error=coverage-mismatch -msoft-float
-CFLAGS		+= -Ofast -march=armv4t -fomit-frame-pointer -fdata-sections -ffunction-sections -fplt -fno-pic -fno-pie -msoft-float
+CFLAGS		+= -Ofast -march=armv5te -fomit-frame-pointer -fdata-sections -ffunction-sections -fplt -fno-pic -fno-pie -msoft-float
 CFLAGS		+= -fno-pic
 CFLAGS		+= -O3
 
