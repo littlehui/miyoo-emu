@@ -1,0 +1,13 @@
+obj
+*.o
+*.exe
+*.bat
+*.dge
+*.zip
+*.sh
+*~.c
+*~.cpp
+*~.h
+*~.txt
+src/generated/*
+gamelist.txt

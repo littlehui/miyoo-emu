@@ -1,0 +1,20 @@
+---miyoo littlehui
+	{ "p0600.117",     0x400000, 0xc4d19fe6, 1 | BRF_ESS | BRF_PRG }, // 68000
+
+	{ "t0600.rom",     0x800000, 0x4acc1ad6, 2 | BRF_GRA },		  // 32x32 BG Tiles
+	
+	{ "a0600.rom",     0x800000, 0xd8167834, 3 | BRF_GRA },		  // Sprite Colour Data
+	{ "a0601.rom",     0x800000, 0xff7a4373, 3 | BRF_GRA },
+	{ "a0602.rom",     0x800000, 0xe7a32959, 3 | BRF_GRA },
+	{ "a0603.rom",     0x400000, 0xec31abda, 3 | BRF_GRA },
+	
+	{ "b0600.rom",     0x800000, 0x7d3cd059, 4 | BRF_GRA },		  // Sprite Masks + Colour Indexes
+	{ "b0601.rom",     0x400000, 0xa0bb1c2f, 4 | BRF_GRA },
+	
+	{ "m0600.rom",     0x400000, 0x3ada4fd6, 5 | BRF_SND },		  // Samples - (8 bit mono 11025Hz)
+			{ "pgm_p01s.rom", 0x020000, 0xe42b166e, BRF_ESS | BRF_PRG | BRF_BIOS },	// 68K BIOS (V0001)
+        	{ "pgm_t01s.rom", 0x200000, 0x1a7123a0, BRF_GRA | BRF_BIOS }, 					// 8x8 Text Layer Tiles
+        	{ "pgm_m01s.rom", 0x200000, 0x45ae7159, BRF_SND | BRF_BIOS },
+---hank
+
+
