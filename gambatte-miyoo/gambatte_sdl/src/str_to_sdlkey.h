@@ -19,7 +19,7 @@
 #ifndef STR_TO_SDLKEY_H
 #define STR_TO_SDLKEY_H
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 SDLKey const * strToSdlkey(char const *str);
 void printStrSdlkeys();

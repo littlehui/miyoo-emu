@@ -17,7 +17,7 @@
 //
 
 #include "usec.h"
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 usec_t getusecs() {
 	return SDL_GetTicks() * usec_t(1000);

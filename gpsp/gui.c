@@ -1338,8 +1338,8 @@ u32 menu(u16 *original_screen)
 
   static const char *update_backup_options[] = { "Exit only", "Automatic" };
 
-  // Marker for help information, don't go past this mark (except \n)------*
-  menu_option_type graphics_sound_options[] = 
+    // Marker for help information, don't go past this mark (except \n)------*
+    menu_option_type graphics_sound_options[] =
  {
 #ifndef RPI_BUILD
     string_selection_option(NULL, "Display scaling", scale_options,

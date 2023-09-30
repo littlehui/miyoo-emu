@@ -28,7 +28,7 @@
 #include <gambatte.h>
 #include <pakinfo.h>
 #include "../../libgambatte/src/bootloader.h"
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
@@ -343,7 +343,7 @@ class InputOption : public DescOption {
 public:
 	InputOption()
 	: DescOption("input", 'i', 10)
-#if defined VERSION_GCW0 || defined VERSION_RETROFW
+/*#if defined VERSION_GCW0 || defined VERSION_RETROFW
 	{
 		ids_[0].keydata = SDLK_RETURN;
 		ids_[1].keydata = SDLK_ESCAPE;
@@ -382,8 +382,19 @@ public:
 		ids_[8].keydata = SDLK_SPACE;
 		ids_[9].keydata = SDLK_LSHIFT;
 	}
-#endif
-
+#endif*/
+    {
+        ids_[0].keydata = SDLK_RETURN;
+        ids_[1].keydata = SDLK_ESCAPE;
+        ids_[2].keydata = SDLK_LCTRL;
+        ids_[3].keydata = SDLK_LALT;
+        ids_[4].keydata = SDLK_UP;
+        ids_[5].keydata = SDLK_DOWN;
+        ids_[6].keydata = SDLK_LEFT;
+        ids_[7].keydata = SDLK_RIGHT;
+        ids_[8].keydata = SDLK_SPACE;
+        ids_[9].keydata = SDLK_LSHIFT;
+    }
 	virtual void exec(char const *const *argv, int index);
 
 	virtual std::string const desc() const {

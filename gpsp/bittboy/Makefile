@@ -7,7 +7,7 @@
 
 CC        = arm-linux-gcc
 
-OBJS      = main.o cpu.o memory.o video.o input.o sound.o gui.o \
+OBJS      = main.o cpu.o memory.o video.o input.o sound.o gui.o cc_lut.o\
             cheats.o zip.o  arm_stub.o  warm.o cpu_threaded.o video_blend.o sha1.o imageio.o
 
 BIN       = gpsp

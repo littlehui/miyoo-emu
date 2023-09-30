@@ -17,7 +17,7 @@
 //
 
 #include "audiosink.h"
-#include <SDL_thread.h>
+#include <SDL/SDL_thread.h>
 #include <cstdio>
 #include "../menu.h"
 

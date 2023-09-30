@@ -710,11 +710,14 @@ gui_action_type get_gui_input()
             break;
 
           case SDLK_RETURN:
-          case SDLK_LCTRL:
+              case SDLK_LALT:
+                  //change bittboy
+          //case SDLK_LCTRL:
             gui_action = CURSOR_SELECT;
             break;
 
-          case SDLK_LALT:
+          case SDLK_LCTRL:
+          //    case SDLK_LALT:
             gui_action = CURSOR_EXIT;
             break;
 	 default:

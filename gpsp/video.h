@@ -20,6 +20,15 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+#define GBA_SCREEN_WIDTH 240
+#define GBA_SCREEN_HEIGHT 160
+
+
+static uint16_t GBAScreenPrev[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+static uint16_t GBAScreenProcessed[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+
+static uint16_t* GBAScreen;
+
 void update_scanline();
 void update_screen();
 void init_video();
@@ -98,6 +107,15 @@ typedef enum
   filter2_scale3x,
   filter2_eagle2x,
 } video_filter_type2;
+
+typedef enum
+{
+    post_process_type_none = 0,
+    post_process_type_cc,
+    post_process_type_mix,
+    post_process_type_cc_mix
+} video_post_process_type;
+
 
 extern video_scale_type screen_scale;
 extern video_scale_type current_scale;

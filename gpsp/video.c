@@ -18,6 +18,7 @@
  */
 
 #include "common.h"
+#include "cc_lut.h"
 #define WANT_FONT_BITS
 #include "font.h"
 
@@ -42,8 +43,6 @@ static u32 video_direct = 0;
 
 static u32 __attribute__((aligned(16))) display_list[32];
 
-#define GBA_SCREEN_WIDTH 240
-#define GBA_SCREEN_HEIGHT 160
 
 #define PSP_SCREEN_WIDTH 480
 #define PSP_SCREEN_HEIGHT 272
@@ -3452,6 +3451,474 @@ SDL_Surface* rl_screen;
  * color and the second pixel contributes 1/4. */
 #define AverageQuarters3_1(A, B) ( (((A) & 0xF7DE) >> 1) + (((A) & 0xE79C) >> 2) + (((B) & 0xE79C) >> 2) + ((( (( ((A) & 0x1863) + ((A) & 0x0821) ) << 1) + ((B) & 0x1863) ) >> 2) & 0x1863) )
 
+
+/***************************************************************************
+ *   Stand-alone video post processing functions                           *
+ *   (colour correction, interframe blending)                              *
+ ***************************************************************************/
+
+static inline void video_post_process_cc(uint16_t *src, uint16_t *dst)
+{
+    size_t x, y;
+
+    /* Note: GBAScreen pitch is equal to GBA_SCREEN_WIDTH */
+    for (y = 0; y < GBA_SCREEN_HEIGHT; y++)
+    {
+        for (x = 0; x < GBA_SCREEN_WIDTH; x++)
+        {
+            /* Source array values should be limited to
+             * the lowest 15 bits - but since the data
+             * type is 16 bit, we have to mask it in
+             * order to guarantee that CcLUT can never
+             * overflow... */
+            *(dst + x) = *(CcLUT + (*(src + x) & 0x7FFF));
+        }
+        src += GBA_SCREEN_WIDTH;
+        dst += GBA_SCREEN_WIDTH;
+    }
+}
+
+
+static inline void video_post_process_mix(void)
+{
+    uint16_t *src_curr = GBAScreen;
+    uint16_t *src_prev = GBAScreenPrev;
+    uint16_t *dst      = GBAScreenProcessed;
+    size_t x, y;
+
+    for (y = 0; y < GBA_SCREEN_HEIGHT; y++)
+    {
+        for (x = 0; x < GBA_SCREEN_WIDTH; x++)
+        {
+            /* Get colours from current + previous frames (BGR555) */
+            uint16_t rgb_curr = *(src_curr + x) & 0x7FFF;
+            uint16_t rgb_prev = *(src_prev + x);
+
+            /* Store colours for next frame */
+            *(src_prev + x)   = rgb_curr;
+
+            /* Mix colours
+             * > "Mixing Packed RGB Pixels Efficiently"
+             *   http://blargg.8bitalley.com/info/rgb_mixing.html */
+
+            //*(dst + x)        = (rgb_curr + rgb_prev + ((rgb_curr ^ rgb_prev) & 0x421)) >> 1;
+
+            *(dst + x)        = *(CcLUT +
+                                  ((rgb_curr + rgb_prev + ((rgb_curr ^ rgb_prev) & 0x421)) >> 1));
+        }
+        src_curr += GBA_SCREEN_WIDTH;
+        src_prev += GBA_SCREEN_WIDTH;
+        dst      += GBA_SCREEN_WIDTH;
+    }
+}
+
+
+/***************************************************************************
+ *   Scaler copyright (C) 2013 by Paul Cercueil                            *
+ *   paul@crapouillou.net                                                  *
+ ***************************************************************************/
+#define bgr555_to_rgb565(px) (((px & 0x7c007c00) >> 10) | ((px & 0x03e003e0) << 1)| ((px & 0x001f001f) << 11))
+// static inline uint32_t bgr555_to_rgb565(uint32_t px)
+// {
+// return ((px & 0x7c007c00) >> 10)
+// | ((px & 0x03e003e0) << 1)
+// | ((px & 0x001f001f) << 11);
+// }
+
+/***************************************************************************
+ *   16-bit I/O version used by the sub-pixel and bilinear scalers         *
+ *   (C) 2013 kuwanger                                                     *
+ ***************************************************************************/
+#define bgr555_to_rgb565_16(px) (((px & 0x7c00) >> 10) | ((px & 0x03e0) << 1) | ((px & 0x001f) << 11))
+// static inline uint16_t bgr555_to_rgb565_16(uint16_t px)
+// {
+// return ((px & 0x7c00) >> 10)
+// | ((px & 0x03e0) << 1)
+// | ((px & 0x001f) << 11);
+// }
+
+#define bgr555_to_native(px) (px)
+#define bgr555_to_native_16(px) (px)
+
+/* Upscales an image by 33% in width and in height with bilinear filtering;
+ * also does color conversion using the function above.
+ * Input:
+ *   from: A pointer to the pixels member of a src_x by src_y surface to be
+ *     read by this function. The pixel format of this surface is XBGR 1555.
+ *   src_x: The width of the source.
+ *   src_y: The height of the source.
+ *   src_pitch: The number of bytes making up a scanline in the source
+ *     surface.
+ *   dst_pitch: The number of bytes making up a scanline in the destination
+ *     surface.
+ * Output:
+ *   to: A pointer to the pixels member of a (src_x * 4/3) by (src_y * 4/3)
+ *     surface to be filled with the upscaled GBA image. The pixel format of
+ *     this surface is RGB 565.
+ */
+static inline void gba_upscale_aspect_bilinear(uint16_t *to, uint16_t *from,
+                                               uint32_t src_x, uint32_t src_y, uint32_t src_pitch, uint32_t dst_pitch)
+{
+    const uint32_t dst_x = src_x * 4 / 3;
+    const uint32_t src_skip = src_pitch - src_x * sizeof(uint16_t),
+            dst_skip = dst_pitch - dst_x * sizeof(uint16_t);
+
+    uint_fast16_t sectY;
+    for (sectY = 0; sectY < src_y / 3; sectY++)
+    {
+        uint_fast16_t sectX;
+        for (sectX = 0; sectX < src_x / 3; sectX++)
+        {
+            uint_fast16_t rightCol = (sectX == src_x / 3 - 1) ? 4 : 6;
+            /* Read RGB565 elements in the source grid.
+             * The last column blends with the first column of the next
+             * section. The last row does the same thing.
+             *
+             * a b c | d
+             * e f g | h
+             * i j k | l
+             * ---------
+             * m n o | p
+             */
+            uint32_t a = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from    )),
+                    b = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + 2)),
+                    c = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + 4)),
+                    d = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + rightCol));
+            // The 4 output pixels in a row use 0.75, 1.5 then 2.25 as the X
+            // coordinate for interpolation.
+
+            // -- Row 1 --
+            // All pixels in this row use 0 as the Y coordinate.
+
+            // -- Row 1 pixel 1 (X = 0) --
+            *to = a;
+
+            // -- Row 1 pixel 2 (X = 0.75) --
+            *(uint16_t*) ((uint8_t*) to + 2) = likely(a == b)
+                                               ? a
+                                               : AverageQuarters3_1(b, a);
+
+            // -- Row 1 pixel 3 (X = 1.5) --
+            *(uint16_t*) ((uint8_t*) to + 4) = likely(b == c)
+                                               ? b
+                                               : Average(b, c);
+
+            // -- Row 1 pixel 4 (X = 2.25) --
+            *(uint16_t*) ((uint8_t*) to + 6) = likely(c == d)
+                                               ? c
+                                               : AverageQuarters3_1(c, d);
+
+            // -- Row 2 --
+            // All pixels in this row use 0.75 as the Y coordinate.
+            uint32_t e = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch    )),
+                    f = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch + 2)),
+                    g = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch + 4)),
+                    h = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch + rightCol));
+
+            // -- Row 2 pixel 1 (X = 0) --
+            *(uint16_t*) ((uint8_t*) to + dst_pitch) = likely(a == e)
+                                                       ? a
+                                                       : AverageQuarters3_1(e, a);
+
+            // -- Row 2 pixel 2 (X = 0.75) --
+            uint16_t e1f3 = likely(e == f)
+                            ? e
+                            : AverageQuarters3_1(f, e);
+            uint16_t a1b3 = likely(a == b)
+                            ? a
+                            : AverageQuarters3_1(b, a);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch + 2) = /* in Y */ likely(a1b3 == e1f3)
+                                                                      ? a1b3
+                                                                      : AverageQuarters3_1(/* in X, bottom */ e1f3, /* in X, top */ a1b3);
+
+            // -- Row 2 pixel 3 (X = 1.5) --
+            uint16_t fg = likely(f == g)
+                          ? f
+                          : Average(f, g);
+            uint16_t bc = likely(b == c)
+                          ? b
+                          : Average(b, c);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch + 4) = /* in Y */ likely(bc == fg)
+                                                                      ? bc
+                                                                      : AverageQuarters3_1(/* in X, bottom */ fg, /* in X, top */ bc);
+
+            // -- Row 2 pixel 4 (X = 2.25) --
+            uint16_t g3h1 = likely(g == h)
+                            ? g
+                            : AverageQuarters3_1(g, h);
+            uint16_t c3d1 = likely(c == d)
+                            ? c
+                            : AverageQuarters3_1(c, d);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch + 6) = /* in Y */ likely(g3h1 == c3d1)
+                                                                      ? c3d1
+                                                                      : AverageQuarters3_1(/* in X, bottom */ g3h1, /* in X, top */ c3d1);
+
+            // -- Row 3 --
+            // All pixels in this row use 1.5 as the Y coordinate.
+            uint32_t i = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch * 2    )),
+                    j = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch * 2 + 2)),
+                    k = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch * 2 + 4)),
+                    l = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch * 2 + rightCol));
+
+            // -- Row 3 pixel 1 (X = 0) --
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 2) = likely(e == i)
+                                                           ? e
+                                                           : Average(e, i);
+
+            // -- Row 3 pixel 2 (X = 0.75) --
+            uint16_t i1j3 = likely(i == j)
+                            ? i
+                            : AverageQuarters3_1(j, i);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 2 + 2) = /* in Y */ likely(e1f3 == i1j3)
+                                                                          ? e1f3
+                                                                          : Average(e1f3, i1j3);
+
+            // -- Row 3 pixel 3 (X = 1.5) --
+            uint16_t jk = likely(j == k)
+                          ? j
+                          : Average(j, k);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 2 + 4) = /* in Y */ likely(fg == jk)
+                                                                          ? fg
+                                                                          : Average(fg, jk);
+
+            // -- Row 3 pixel 4 (X = 2.25) --
+            uint16_t k3l1 = likely(k == l)
+                            ? k
+                            : AverageQuarters3_1(k, l);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 2 + 6) = /* in Y */ likely(g3h1 == k3l1)
+                                                                          ? g3h1
+                                                                          : Average(g3h1, k3l1);
+
+            // -- Row 4 --
+            // All pixels in this row use 2.25 as the Y coordinate.
+            uint32_t m = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch * 3    )),
+                    n = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch * 3 + 2)),
+                    o = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch * 3 + 4)),
+                    p = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch * 3 + rightCol));
+
+            // -- Row 4 pixel 1 (X = 0) --
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 3) = likely(i == m)
+                                                           ? i
+                                                           : AverageQuarters3_1(i, m);
+
+            // -- Row 4 pixel 2 (X = 0.75) --
+            uint16_t m1n3 = likely(m == n)
+                            ? m
+                            : AverageQuarters3_1(n, m);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 3 + 2) = /* in Y */ likely(i1j3 == m1n3)
+                                                                          ? i1j3
+                                                                          : AverageQuarters3_1(/* in X, top */ i1j3, /* in X, bottom */ m1n3);
+
+            // -- Row 4 pixel 3 (X = 1.5) --
+            uint16_t no = likely(n == o)
+                          ? n
+                          : Average(n, o);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 3 + 4) = /* in Y */ likely(jk == no)
+                                                                          ? jk
+                                                                          : AverageQuarters3_1(/* in X, top */ jk, /* in X, bottom */ no);
+
+            // -- Row 4 pixel 4 (X = 2.25) --
+            uint16_t o3p1 = likely(o == p)
+                            ? o
+                            : AverageQuarters3_1(o, p);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 3 + 6) = /* in Y */ likely(k3l1 == o3p1)
+                                                                          ? k3l1
+                                                                          : AverageQuarters3_1(/* in X, top */ k3l1, /* in X, bottom */ o3p1);
+
+            from += 3;
+            to   += 4;
+        }
+
+        // Skip past the waste at the end of the first line, if any,
+        // then past 2 whole lines of source and 3 of destination.
+        from = (uint16_t*) ((uint8_t*) from + src_skip + 2 * src_pitch);
+        to   = (uint16_t*) ((uint8_t*) to   + dst_skip + 3 * dst_pitch);
+    }
+
+    if (src_y % 3 == 1)
+    {
+        uint_fast16_t sectX;
+        for (sectX = 0; sectX < src_x / 3; sectX++)
+        {
+            uint_fast16_t rightCol = (sectX == src_x / 3 - 1) ? 4 : 6;
+            /* Read RGB565 elements in the source grid.
+             * The last column blends with the first column of the next
+             * section. The last row does the same thing.
+             *
+             * a b c | d
+             */
+            uint32_t a = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from    )),
+                    b = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + 2)),
+                    c = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + 4)),
+                    d = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + rightCol));
+            // The 4 output pixels in a row use 0.75, 1.5 then 2.25 as the X
+            // coordinate for interpolation.
+
+            // -- Row 1 pixel 1 (X = 0) --
+            *to = a;
+
+            // -- Row 1 pixel 2 (X = 0.75) --
+            *(uint16_t*) ((uint8_t*) to + 2) = likely(a == b)
+                                               ? a
+                                               : AverageQuarters3_1(b, a);
+
+            // -- Row 1 pixel 3 (X = 1.5) --
+            *(uint16_t*) ((uint8_t*) to + 4) = likely(b == c)
+                                               ? b
+                                               : Average(b, c);
+
+            // -- Row 1 pixel 4 (X = 2.25) --
+            *(uint16_t*) ((uint8_t*) to + 6) = likely(c == d)
+                                               ? c
+                                               : AverageQuarters3_1(c, d);
+
+            from += 3;
+            to   += 4;
+        }
+    }
+}
+
+
+/* Upscales an image by 33% in width and 50% in height with bilinear
+ * filtering; also does color conversion using the function above.
+ * Input:
+ *   from: A pointer to the pixels member of a src_x by src_y surface to be
+ *     read by this function. The pixel format of this surface is XBGR 1555.
+ *   src_x: The width of the source.
+ *   src_y: The height of the source.
+ *   src_pitch: The number of bytes making up a scanline in the source
+ *     surface.
+ *   dst_pitch: The number of bytes making up a scanline in the destination
+ *     surface.
+ * Output:
+ *   to: A pointer to the pixels member of a (src_x * 4/3) by (src_y * 3/2)
+ *     surface to be filled with the upscaled GBA image. The pixel format of
+ *     this surface is RGB 565.
+ */
+static inline void gba_upscale_bilinear(uint16_t *to, uint16_t *from,
+                                        uint32_t src_x, uint32_t src_y, uint32_t src_pitch, uint32_t dst_pitch)
+{
+    const uint32_t dst_x = src_x * 4 / 3;
+    const uint32_t src_skip = src_pitch - src_x * sizeof(uint16_t),
+            dst_skip = dst_pitch - dst_x * sizeof(uint16_t);
+
+    uint_fast16_t sectY;
+    for (sectY = 0; sectY < src_y / 2; sectY++)
+    {
+        uint_fast16_t sectX;
+        for (sectX = 0; sectX < src_x / 3; sectX++)
+        {
+            uint_fast16_t rightCol = (sectX == src_x / 3 - 1) ? 4 : 6;
+            /* Read RGB565 elements in the source grid.
+             * The last column blends with the first column of the next
+             * section.
+             *
+             * a b c | d
+             * e f g | h
+             */
+            uint32_t a = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from    )),
+                    b = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + 2)),
+                    c = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + 4)),
+                    d = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + rightCol));
+            // The 4 output pixels in a row use 0.75, 1.5 then 2.25 as the X
+            // coordinate for interpolation.
+
+            // -- Row 1 --
+
+            // -- Row 1 pixel 1 (X = 0) --
+            *to = a;
+
+            // -- Row 1 pixel 2 (X = 0.75) --
+            *(uint16_t*) ((uint8_t*) to + 2) = likely(a == b)
+                                               ? a
+                                               : AverageQuarters3_1(b, a);
+
+            // -- Row 1 pixel 3 (X = 1.5) --
+            *(uint16_t*) ((uint8_t*) to + 4) = likely(b == c)
+                                               ? b
+                                               : Average(b, c);
+
+            // -- Row 1 pixel 4 (X = 2.25) --
+            *(uint16_t*) ((uint8_t*) to + 6) = likely(c == d)
+                                               ? c
+                                               : AverageQuarters3_1(c, d);
+
+            // -- Row 2 --
+            // All pixels in this row are blended from the two rows.
+            uint32_t e = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch    )),
+                    f = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch + 2)),
+                    g = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch + 4)),
+                    h = bgr555_to_native_16(*(uint16_t*) ((uint8_t*) from + src_pitch + rightCol));
+
+            // -- Row 2 pixel 1 (X = 0) --
+            *(uint16_t*) ((uint8_t*) to + dst_pitch) = likely(a == e)
+                                                       ? a
+                                                       : Average(a, e);
+
+            // -- Row 2 pixel 2 (X = 0.75) --
+            uint16_t e1f3 = likely(e == f)
+                            ? e
+                            : AverageQuarters3_1(f, e);
+            uint16_t a1b3 = likely(a == b)
+                            ? a
+                            : AverageQuarters3_1(b, a);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch + 2) = likely(a1b3 == e1f3)
+                                                           ? a1b3
+                                                           : Average(a1b3, e1f3);
+
+            // -- Row 2 pixel 3 (X = 1.5) --
+            uint16_t fg = likely(f == g)
+                          ? f
+                          : Average(f, g);
+            uint16_t bc = likely(b == c)
+                          ? b
+                          : Average(b, c);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch + 4) = likely(bc == fg)
+                                                           ? bc
+                                                           : Average(bc, fg);
+
+            // -- Row 2 pixel 4 (X = 2.25) --
+            uint16_t g3h1 = likely(g == h)
+                            ? g
+                            : AverageQuarters3_1(g, h);
+            uint16_t c3d1 = likely(c == d)
+                            ? c
+                            : AverageQuarters3_1(c, d);
+            *(uint16_t*) ((uint8_t*) to + dst_pitch + 6) = /* in Y */ likely(g3h1 == c3d1)
+                                                                      ? c3d1
+                                                                      : Average(c3d1, g3h1);
+
+            // -- Row 3 --
+
+            // -- Row 3 pixel 1 (X = 0) --
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 2) = e;
+
+            // -- Row 3 pixel 2 (X = 0.75) --
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 2 + 2) = likely(e == f)
+                                                               ? e
+                                                               : AverageQuarters3_1(f, e);
+
+            // -- Row 3 pixel 3 (X = 1.5) --
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 2 + 4) = likely(f == g)
+                                                               ? f
+                                                               : Average(f, g);
+
+            // -- Row 3 pixel 4 (X = 2.25) --
+            *(uint16_t*) ((uint8_t*) to + dst_pitch * 2 + 6) = likely(g == h)
+                                                               ? g
+                                                               : AverageQuarters3_1(g, h);
+
+            from += 3;
+            to   += 4;
+        }
+
+        // Skip past the waste at the end of the first line, if any,
+        // then past 1 whole lines of source and 2 of destination.
+        from = (uint16_t*) ((uint8_t*) from + src_skip + 1 * src_pitch);
+        to   = (uint16_t*) ((uint8_t*) to   + dst_skip + 2 * dst_pitch);
+    }
+}
+
 static inline void gba_upscale(uint16_t *to, uint16_t *from,
 	  uint32_t src_x, uint32_t src_y, uint32_t src_pitch, uint32_t dst_pitch)
 {
@@ -3759,10 +4226,10 @@ static inline void gba_upscale_aspect(uint16_t *to, uint16_t *from,
 void flip_screen()
 {
 	SDL_Rect srect, drect;
-
 	if ((video_scale != 1) && (current_scale != unscaled))
 	{
-		s32 x, y;
+
+        s32 x, y;
 		s32 x2, y2;
 		u16 *screen_ptr = get_screen_pixels();
 		u16 *current_scanline_ptr = screen_ptr;
@@ -3795,11 +4262,15 @@ void flip_screen()
 		}
     
 	}
+    uint16_t *GBAScreenBuf = screen->pixels;
 
-	  
-	if ((resolution_width == small_resolution_width) && (resolution_height == small_resolution_height))
+    if ((resolution_width == small_resolution_width) && (resolution_height == small_resolution_height))
 	{
-		switch (screen_scale)
+        //color correct bad
+        //video_post_process_mix();
+        //uint16_t *GBAScreenBuf  = GBAScreenProcessed;
+
+        switch (screen_scale)
 		{
 			case 0:
 				srect.x = 0;
@@ -3816,14 +4287,17 @@ void flip_screen()
 				SDL_BlitSurface(screen, &srect, rl_screen, &drect);
 			break;
 			case 1:
-			
-					gba_upscale_aspect((uint16_t*) ((uint8_t*)
-					rl_screen->pixels +
-					(((GCW0_SCREEN_HEIGHT - (GBA_SCREEN_HEIGHT) * 4 / 3) / 2) * rl_screen->pitch)) /* center vertically */,
-					screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
+
+                gba_upscale_aspect_bilinear((uint16_t*) ((uint8_t*)
+                //gba_upscale_aspect((uint16_t*) ((uint8_t*)
+
+                rl_screen->pixels +
+                                                (((GCW0_SCREEN_HEIGHT - (GBA_SCREEN_HEIGHT) * 4 / 3) / 2) * rl_screen->pitch)) /* center vertically */,
+                                            GBAScreenBuf, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
 			break;
 			default:
-				gba_upscale(rl_screen->pixels, screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
+                gba_upscale_bilinear(rl_screen->pixels, GBAScreenBuf, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
+				//gba_upscale(rl_screen->pixels, screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
 			break;
 		}
 	}
@@ -3941,24 +4415,31 @@ void init_video()
 
 void init_video()
 {
-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_NOPARACHUTE);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_NOPARACHUTE);
 
 #ifdef GP2X_BUILD
-  SDL_GP2X_AllowGfxMemory(NULL, 0);
+    SDL_GP2X_AllowGfxMemory(NULL, 0);
 
   hw_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale,
    16, SDL_HWSURFACE);
-
   screen = SDL_CreateRGBSurface(SDL_HWSURFACE, 240 * video_scale,
    160 * video_scale, 16, 0xFFFF, 0xFFFF, 0xFFFF, 0);
 
   warm_change_cb_upper(WCB_C_BIT|WCB_B_BIT, 1);
 #else
-  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE);
-  screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 240 * video_scale, 160 * video_scale, 16, 0, 0, 0, 0);
-  //screen = SDL_SetVideoMode(240 * video_scale, 160 * video_scale, 16, 0);
+    //rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    screen = SDL_CreateRGBSurface(SDL_HWSURFACE | SDL_DOUBLEBUF, 240 * video_scale, 160 * video_scale, 16, 0, 0, 0, 0);
+    //screen = SDL_SetVideoMode(240 * video_scale, 160 * video_scale, 16, 0);
 #endif
-  SDL_ShowCursor(0);
+    SDL_ShowCursor(0);
+    GBAScreen = (uint16_t*) screen->pixels;
+    /* Set auxiliary post-processing buffers to all-white */
+    for (int i = 0; i < GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT; i++)
+    {
+        GBAScreenPrev[i]      = 0x7FFF;
+        GBAScreenProcessed[i] = 0x7FFF;
+    }
 }
 
 #endif
@@ -4189,8 +4670,8 @@ void video_resolution_large()
 #else
   resolution_width = 320;
   resolution_height = 240;
-  rl_screen = SDL_SetVideoMode(resolution_width * video_scale, resolution_height * video_scale, 16, SDL_HWSURFACE);
-  screen = SDL_CreateRGBSurface(SDL_SWSURFACE, resolution_width * video_scale, resolution_height * video_scale, 16, 0, 0, 0, 0);
+  rl_screen = SDL_SetVideoMode(resolution_width * video_scale, resolution_height * video_scale, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+  screen = SDL_CreateRGBSurface(SDL_HWSURFACE | SDL_DOUBLEBUF, resolution_width * video_scale, resolution_height * video_scale, 16, 0, 0, 0, 0);
   /*screen = SDL_SetVideoMode(320, 240, 16, 0);*/
 
 #endif
@@ -4225,8 +4706,8 @@ void video_resolution_small()
 
   warm_change_cb_upper(WCB_C_BIT|WCB_B_BIT, 1);
 #else
-  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE);
-  screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320 * video_scale, 240 * video_scale, 16, 0, 0, 0, 0);
+  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+  screen = SDL_CreateRGBSurface(SDL_HWSURFACE | SDL_DOUBLEBUF, 320 * video_scale, 240 * video_scale, 16, 0, 0, 0, 0);
   /*screen = SDL_SetVideoMode(small_resolution_width * video_scale,
    small_resolution_height * video_scale, 16, 0);*/
 #endif
@@ -4244,7 +4725,9 @@ void video_resolution_small()
         printf("failed to load border png\n");
       }
       SDL_BlitSurface(png, NULL, rl_screen, NULL);
-      SDL_FreeSurface(png);
+      SDL_Flip(rl_screen);
+        SDL_BlitSurface(png, NULL, rl_screen, NULL);
+        SDL_FreeSurface(png);
     }
     break;
   default:

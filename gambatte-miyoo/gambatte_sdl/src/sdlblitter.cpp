@@ -95,7 +95,7 @@ void SdlBlitter::SetVid(int w, int h, int bpp){
 #elif VERSION_RETROFW
 	screen = SDL_SetVideoMode(w, h, bpp, SDL_HWSURFACE | SDL_TRIPLEBUF);
 #elif defined VERSION_BITTBOY || defined VERSION_POCKETGO
-	screen = SDL_SetVideoMode(w, h, bpp, SDL_SWSURFACE);
+	screen = SDL_SetVideoMode(w, h, bpp, SDL_HWSURFACE | SDL_DOUBLEBUF);
 #else
 	screen = SDL_SetVideoMode(w, h, bpp, SDL_HWSURFACE | SDL_DOUBLEBUF);
 #endif

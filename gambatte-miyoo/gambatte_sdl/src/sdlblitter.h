@@ -19,7 +19,7 @@
 #ifndef SDLBLITTER_H
 #define SDLBLITTER_H
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <string.h>
 #include <string>
 #include <SDL/SDL.h>

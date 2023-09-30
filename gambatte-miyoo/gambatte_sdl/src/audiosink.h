@@ -22,7 +22,7 @@
 #include "ringbuffer.h"
 #include "rateest.h"
 #include "scoped_ptr.h"
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <cstddef>
 
 class AudioSink {

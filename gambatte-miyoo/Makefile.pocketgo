@@ -4,10 +4,10 @@ CROSS_COMPILE=$(CHAINPREFIX)/bin/arm-linux-
 CC = $(CROSS_COMPILE)gcc
 CXX = $(CROSS_COMPILE)g++
 #SYSROOT     := $(CHAINPREFIX)/bin/arm-miyoo-linux-uclibcgnueabi/sysroot
-SYSROOT     := /home/opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot
+SYSROOT     := /opt/miyoo/arm-miyoo-linux-uclibcgnueabi/sysroot
 SDL_CFLAGS  := $(shell $(SYSROOT)/usr/bin/sdl-config --cflags)
 
-OUTPUTNAME = gambatte-pocketgo
+OUTPUTNAME = gambatte-bittboy
 
 DEFINES = -DHAVE_STDINT_H -DVERSION_POCKETGO -DSOUND_MONO
 INCLUDES = -Isrc/gambatte_sdl -Ilibgambatte -Icommon -Iinclude -Ilibgambatte/include -Ilibgambatte/src $(SDL_CFLAGS)

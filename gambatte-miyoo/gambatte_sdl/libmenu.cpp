@@ -480,9 +480,9 @@ int menu_main(menu_t *menu) {
 							}
 							break;
 #if (defined VERSION_BITTBOY || defined VERSION_POCKETGO) && (defined MENU_EX_AB)
-						case SDLK_LALT:	/* TA button in bittboy - A button in PocketGo*/
+                            case SDLK_LALT:	/* TA button in bittboy - A button in PocketGo*/
 #else
-						case SDLK_LCTRL:	/* A button */
+                        case SDLK_LCTRL:	/* A button */
 #endif
 							if(menuin == -1){
 								if (menu->entries[menu->selected_entry]->callback != NULL) {

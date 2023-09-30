@@ -1,4 +1,4 @@
-CHAINPREFIX=/opt/buildroot-bittboy/output/host
+CHAINPREFIX=/opt/miyoo
 CROSS_COMPILE=$(CHAINPREFIX)/bin/arm-miyoo-linux-musleabi-
 
 CC = $(CROSS_COMPILE)gcc
