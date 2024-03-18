@@ -16,18 +16,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
+#include <stdbool.h>
 
 #ifndef VIDEO_H
 #define VIDEO_H
 
-#define GBA_SCREEN_WIDTH 240
-#define GBA_SCREEN_HEIGHT 160
+#define GBA_SCREEN_WIDTH  (240)
+#define GBA_SCREEN_HEIGHT (160)
+#define GBA_SCREEN_PITCH  (240)
 
 
-static uint16_t GBAScreenPrev[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
-static uint16_t GBAScreenProcessed[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+static uint16_t GBAScreenPrev[GBA_SCREEN_WIDTH * (GBA_SCREEN_HEIGHT + 80)];
+static uint16_t GBAScreenProcessed[GBA_SCREEN_WIDTH * (GBA_SCREEN_HEIGHT + 80)];
 
 static uint16_t* GBAScreen;
+
+extern u32 post_process_cc_flag;
+extern u32 post_process_mix_flag;
 
 void update_scanline();
 void update_screen();
@@ -123,5 +128,4 @@ extern video_filter_type screen_filter;
 extern video_filter_type2 screen_filter2;
 
 void set_gba_resolution(video_scale_type scale);
-
 #endif

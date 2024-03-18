@@ -861,6 +861,28 @@ u32 update_input()
           synchronize_flag ^= 1;
         }
         else
+
+        if(event.key.keysym.sym == SDLK_PAGEDOWN)
+        {
+          //r2 save
+          char current_savestate_filename[512];
+          u16 *current_screen = copy_screen();
+          get_savestate_filename_noshot(savestate_slot,
+           current_savestate_filename);
+          save_state(current_savestate_filename, current_screen);
+          free(current_screen);
+        }
+        else
+        if(event.key.keysym.sym == SDLK_PAGEUP)
+        {
+          //l2 read
+          char current_savestate_filename[512];
+          get_savestate_filename_noshot(savestate_slot,
+           current_savestate_filename);
+          load_state(current_savestate_filename);
+          return 1;
+        }
+        else
         {
           key |= key_map(event.key.keysym.sym);
           trigger_key(key);

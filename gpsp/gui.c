@@ -884,6 +884,8 @@ enum file_options {
   fo_analog_sensitivity_level,
   fo_screen_filter2,
   fo_main_option_count,
+  fo_post_process_cc = 0,
+  fo_post_process_mix = 0,
 };
 
 #ifdef PC_BUILD
@@ -922,6 +924,10 @@ s32 load_config_file()
       update_backup_flag = file_options[fo_update_backup_flag] % 2;
       global_enable_analog = file_options[fo_global_enable_analog] % 2;
       analog_sensitivity_level = file_options[fo_analog_sensitivity_level] % 8;
+        post_process_mix_flag = file_options[fo_post_process_mix] % 2;
+        post_process_cc_flag = file_options[fo_post_process_cc] % 2;
+        printf("post_process_cc_flag %d\n", post_process_cc_flag);
+        printf("post_process_mix_flag %d\n", post_process_mix_flag);
 
 #ifdef PSP_BUILD
     scePowerSetClockFrequency(clock_speed, clock_speed, clock_speed / 2);
@@ -1014,6 +1020,10 @@ s32 save_config_file()
     file_options[fo_global_enable_analog] = global_enable_analog;
     file_options[fo_analog_sensitivity_level] = analog_sensitivity_level;
     file_options[fo_screen_filter2] = screen_filter2;
+    file_options[fo_post_process_mix] = post_process_mix_flag;
+    file_options[fo_post_process_cc] = post_process_cc_flag;
+    printf("save post_process_cc_flag %d\n", file_options[fo_post_process_cc]);
+    printf("save post_process_mix_flag %d\n", file_options[fo_post_process_mix]);
 
 #ifndef PC_BUILD
     u32 i;
@@ -1341,46 +1351,27 @@ u32 menu(u16 *original_screen)
     // Marker for help information, don't go past this mark (except \n)------*
     menu_option_type graphics_sound_options[] =
  {
-#ifndef RPI_BUILD
-    string_selection_option(NULL, "Display scaling", scale_options,
-     (u32 *)(&screen_scale),
-     sizeof(scale_options) / sizeof(scale_options[0]),
-#ifndef GP2X_BUILD
-     "Determines how the GBA screen is resized in relation to the\n"
-     "entire screen."
-#ifdef PSP_BUILD
-     " Select unscaled 3:2 for GBA resolution, scaled 3:2 for GBA\n"
-     "aspect ratio scaled to fill the height of the PSP screen, and\n"
-     "fullscreen to fill the entire PSP screen."
-#endif
-#endif
-     "", 2),
-#endif
+         string_selection_option(NULL, "Display scaling", scale_options,
+                                 (u32 *)(&screen_scale),
+                                 sizeof(scale_options) / sizeof(scale_options[0]),
+                                 " Select unscaled 3:2 for GBA resolution, scaled 3:2 for GBA\n"
+                                 "aspect ratio scaled to fill the height of the PSP screen, and\n"
+                                 "fullscreen to fill the entire PSP screen.", 2),
 
-#ifndef GP2X_BUILD
-    string_selection_option(NULL, "Screen filtering", yes_no_options,
-     (u32 *)(&screen_filter), 2,
-     "Determines whether or not filtering should be used when\n"
-     "scaling the screen. Selecting this will produce a more even and\n"
-     "smooth image, at the cost of being blurry and having less vibrant\n"
-     "colors.", 3),
-#endif
-#if defined (PND_BUILD)
-    string_selection_option(NULL, "Scaling filter", filter2_options,
-     (u32 *)(&screen_filter2),
-     sizeof(filter2_options) / sizeof(filter2_options[0]),
-     "Optional pixel art scaling filter", 4),
-#endif
+         string_selection_option(NULL, "Color correct", yes_no_options,
+                                 &post_process_cc_flag, 2,
+                                 "Color correct", 3),
+         string_selection_option(NULL, "Interframe blending", yes_no_options,
+                                 &post_process_mix_flag, 2,
+                                 "Interframe blending", 4),
+
     string_selection_option(NULL, "Frameskip type", frameskip_options,
      (u32 *)(&current_frameskip_type), 3,
-#ifndef GP2X_BUILD
-     "Determines what kind of frameskipping to use.\n"
-     "Frameskipping may improve emulation speed of many games.\n"
-#endif
      "Off: Do not skip any frames.\n"
      "Auto: Skip up to N frames (see next opt) as needed.\n"
      "Manual: Always render only 1 out of N + 1 frames."
      , 5),
+
     numeric_selection_option(NULL, "Frameskip value", &frameskip_value, 100,
 #ifndef GP2X_BUILD
      "For auto frameskip, determines the maximum number of frames that\n"

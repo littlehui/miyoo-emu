@@ -158,7 +158,7 @@ void ConfigGameDefault()
 	options.frameskip = -1;		// auto frameskip by default
 	options.create_lists = 0;
 	options.m68kcore = 0;		// 0 - c68k, 1 - m68k, 2 - a68k
-	options.z80core = 0;
+	options.z80core = 1;
 	options.sense = 100;
 
 	keymap.up = SDLK_UP;

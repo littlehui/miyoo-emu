@@ -1,0 +1,12 @@
+*.o
+*.gcda
+*.dge
+*.opk
+.opk_data
+*.ipk
+*.elf
+*.bin
+profile/*
+*.patch
+.idea
+*~

@@ -18,7 +18,7 @@
  */
 
 #include "common.h"
-#include "cc_lut.h"
+#include "gba_cc_lut.h"
 #define WANT_FONT_BITS
 #include "font.h"
 
@@ -3457,27 +3457,31 @@ SDL_Surface* rl_screen;
  *   (colour correction, interframe blending)                              *
  ***************************************************************************/
 
-static inline void video_post_process_cc(uint16_t *src, uint16_t *dst)
+static inline void video_post_process_cc(void)
 {
+    uint16_t *src = GBAScreen;
+    uint16_t *dst = GBAScreenProcessed;
     size_t x, y;
 
     /* Note: GBAScreen pitch is equal to GBA_SCREEN_WIDTH */
-    for (y = 0; y < GBA_SCREEN_HEIGHT; y++)
+    for (y = 0; y < (GBA_SCREEN_HEIGHT + 80); y++)
     {
-        for (x = 0; x < GBA_SCREEN_WIDTH; x++)
+        for (x = 0; x < GBA_SCREEN_PITCH; x++)
         {
             /* Source array values should be limited to
              * the lowest 15 bits - but since the data
              * type is 16 bit, we have to mask it in
              * order to guarantee that CcLUT can never
              * overflow... */
-            *(dst + x) = *(CcLUT + (*(src + x) & 0x7FFF));
+            //*(dst + x) = *(CcLUT + (*(src + x) & 0x7FFF));
+            u16 src_color = *(src + x);
+            *(dst + x) = *(gba_cc_lut + (((src_color & 0xFFC0) >> 1) | (src_color & 0x1F)));
+
         }
-        src += GBA_SCREEN_WIDTH;
-        dst += GBA_SCREEN_WIDTH;
+        src += GBA_SCREEN_PITCH;
+        dst += GBA_SCREEN_PITCH;
     }
 }
-
 
 static inline void video_post_process_mix(void)
 {
@@ -3486,12 +3490,12 @@ static inline void video_post_process_mix(void)
     uint16_t *dst      = GBAScreenProcessed;
     size_t x, y;
 
-    for (y = 0; y < GBA_SCREEN_HEIGHT; y++)
+    for (y = 0; y < GBA_SCREEN_HEIGHT + 80; y++)
     {
-        for (x = 0; x < GBA_SCREEN_WIDTH; x++)
+        for (x = 0; x < GBA_SCREEN_PITCH; x++)
         {
-            /* Get colours from current + previous frames (BGR555) */
-            uint16_t rgb_curr = *(src_curr + x) & 0x7FFF;
+            /* SDLK_PAGEUPGet colours from current + previous frames (BGR555) */
+            uint16_t rgb_curr = *(src_curr + x);
             uint16_t rgb_prev = *(src_prev + x);
 
             /* Store colours for next frame */
@@ -3500,19 +3504,47 @@ static inline void video_post_process_mix(void)
             /* Mix colours
              * > "Mixing Packed RGB Pixels Efficiently"
              *   http://blargg.8bitalley.com/info/rgb_mixing.html */
-
-            //*(dst + x)        = (rgb_curr + rgb_prev + ((rgb_curr ^ rgb_prev) & 0x421)) >> 1;
-
-            *(dst + x)        = *(CcLUT +
-                                  ((rgb_curr + rgb_prev + ((rgb_curr ^ rgb_prev) & 0x421)) >> 1));
+            *(dst + x)        = (rgb_curr + rgb_prev + ((rgb_curr ^ rgb_prev) & 0x821)) >> 1;
         }
-        src_curr += GBA_SCREEN_WIDTH;
-        src_prev += GBA_SCREEN_WIDTH;
-        dst      += GBA_SCREEN_WIDTH;
+        src_curr += GBA_SCREEN_PITCH;
+        src_prev += GBA_SCREEN_PITCH;
+        dst      += GBA_SCREEN_PITCH;
     }
 }
 
 
+static void video_post_process_cc_mix(void)
+{
+    uint16_t *src_curr = GBAScreen;
+    uint16_t *src_prev = GBAScreenPrev;
+    uint16_t *dst      = GBAScreenProcessed;
+    size_t x, y;
+
+    for (y = 0; y < GBA_SCREEN_HEIGHT + 80; y++)
+    {
+        for (x = 0; x < GBA_SCREEN_PITCH; x++)
+        {
+            /* Get colours from current + previous frames (RGB565) */
+            uint16_t rgb_curr = *(src_curr + x);
+            uint16_t rgb_prev = *(src_prev + x);
+
+            /* Store colours for next frame */
+            *(src_prev + x)   = rgb_curr;
+
+            /* Mix colours
+             * > "Mixing Packed RGB Pixels Efficiently"
+             *   http://blargg.8bitalley.com/info/rgb_mixing.html */
+            uint16_t rgb_mix  = (rgb_curr + rgb_prev + ((rgb_curr ^ rgb_prev) & 0x821)) >> 1;
+
+            /* Convert colour to RGB555 and perform lookup */
+            *(dst + x) = *(gba_cc_lut + (((rgb_mix & 0xFFC0) >> 1) | (rgb_mix & 0x1F)));
+        }
+
+        src_curr += GBA_SCREEN_PITCH;
+        src_prev += GBA_SCREEN_PITCH;
+        dst      += GBA_SCREEN_PITCH;
+    }
+}
 /***************************************************************************
  *   Scaler copyright (C) 2013 by Paul Cercueil                            *
  *   paul@crapouillou.net                                                  *
@@ -4222,7 +4254,8 @@ static inline void gba_upscale_aspect(uint16_t *to, uint16_t *from,
 
 #define GBA_SCREEN_WIDTH 240
 #define GBA_SCREEN_HEIGHT 160
-			
+u32 post_process_cc_flag = 0;
+u32 post_process_mix_flag = 0;
 void flip_screen()
 {
 	SDL_Rect srect, drect;
@@ -4262,14 +4295,27 @@ void flip_screen()
 		}
     
 	}
-    uint16_t *GBAScreenBuf = screen->pixels;
+    uint16_t *GBAScreenBuf = GBAScreen;
 
     if ((resolution_width == small_resolution_width) && (resolution_height == small_resolution_height))
 	{
-        //color correct bad
-        //video_post_process_mix();
-        //uint16_t *GBAScreenBuf  = GBAScreenProcessed;
+        //color correct
+        //video_post_process_cc();
+        //GBAScreenBuf  = GBAScreenProcessed;
 
+        /* Assign post processing function */
+        if (post_process_cc_flag && post_process_mix_flag) {
+            video_post_process_cc_mix();
+            GBAScreenBuf  = GBAScreenProcessed;
+        } else if (post_process_cc_flag) {
+            video_post_process_cc();
+            GBAScreenBuf  = GBAScreenProcessed;
+        } else if (post_process_mix_flag) {
+            video_post_process_mix();
+            GBAScreenBuf  = GBAScreenProcessed;
+        }
+
+        //GBAScreenBuf = (uint16_t *)gba_processed_pixels;
         switch (screen_scale)
 		{
 			case 0:
@@ -4435,11 +4481,13 @@ void init_video()
     SDL_ShowCursor(0);
     GBAScreen = (uint16_t*) screen->pixels;
     /* Set auxiliary post-processing buffers to all-white */
-    for (int i = 0; i < GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT; i++)
+    for (int i = 0; i < GBA_SCREEN_WIDTH * (GBA_SCREEN_HEIGHT + 80); i++)
     {
         GBAScreenPrev[i]      = 0x7FFF;
         GBAScreenProcessed[i] = 0x7FFF;
     }
+    //size_t buf_size = GBA_SCREEN_PITCH * GBA_SCREEN_HEIGHT * sizeof(u16);
+    //memset(gba_processed_pixels, 0xFFFF, buf_size);
 }
 
 #endif
